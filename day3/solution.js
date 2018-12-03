@@ -5,7 +5,6 @@ var fabric = create2darray(1500);
 var claims = new Map();
 //create data structure of all fabrics
 (inputs).forEach(input => {
-    //break on spaces
     input = input.split(" ");
     var id = input [0];
     //2 = 509,796:
