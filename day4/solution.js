@@ -4,12 +4,19 @@ Date.prototype.addDays = function(days) {
     date.setDate(date.getDate() + days);
     return date;
 }
+
+function sortNumber(a,b) {
+    return a - b;
+}
+
 var inputs = fs.readFileSync('input.txt').toString().split("\n");
 //map of all guards
 var guards = new Map();
 var days = new Map();
 var datereg = /\[(.*?)\]/gm;
 //read everything in, parse it, store it and sort it.
+var guardcount = 0;
+
 (inputs).forEach(input => {
     //get carriage returns out
     input = input.replace(/[\n\r]+/gm, '');
@@ -20,35 +27,27 @@ var datereg = /\[(.*?)\]/gm;
     var timearr = datetimearr[1].split(':');
     var hour = timearr[0];
     var min = timearr[1];
-    //console.log('Date: ' + date + " time: " + hour + ":" + min);
     var actdate = new Date(date);
-    //console.log("y: %s, m: %s, d: %s, h: %s, m: %s, date: %s", year, mon, day, hour, min, actdate);
-
     //initialize it with the guard standing duty that day
     if(input.includes("Guard")) {
-        var log = false;
-        if(actdate.toLocaleDateString() === '1518-5-12') log = true;
-        else log = false;
-        if (log) console.log(input);
-        if (log) console.log(date);
-        if (log) console.log(actdate.toLocaleDateString());
         if(hour === '23') {
             actdate = actdate.addDays(1);
-            if (log) console.log('yp');
         }
-        if (log) console.log(actdate.toLocaleDateString());
+
         var brokenstr = input.split(' ');
         var guard = brokenstr[3];
-        if (log) console.log(actdate.toLocaleDateString() + " " + guard);
 
-        days.set(actdate.toLocaleDateString(), {'guard': guard, 'events': []})
+        if(days.has(actdate.toDateString())) console.log("Dupe! %s", actdate);
+        else days.set(actdate.toDateString(), {'id': actdate.toDateString(),'guard': guard, 'events': [], 'raw': []})
+
         if (guards.has(guard)) {
-            guards.get(guard).days.push(actdate.toLocaleDateString());
+            guards.get(guard).days.push(days.get(actdate.toDateString()));
         } else {
-            guards.set(guard, {'days': [], 'minasleep': 0});
+            guards.set(guard, {'id': guard, 'days': [], 'instancesasleep': new Array(60).fill(0), 'minasleep': 0});
         }
     }
 });
+console.log(guardcount);
 
 //add all events
 (inputs).forEach(input => {
@@ -63,14 +62,40 @@ var datereg = /\[(.*?)\]/gm;
     var actdate = new Date(date);
     
     if(!input.includes("Guard")) {
-        var day = days.get(actdate.toLocaleDateString());
+        var day = days.get(actdate.toDateString());
         day.events.push(parseInt(min));
-        day.events.sort();
-        // console.log(actdate.toLocaleDateString());
-        // console.log(day);
+        day.raw.push(input);
     }
 });
-
+var max = null;
+var maxinstance = {'guard': null, 'count': 0};
 //calc min asleep
-console.log(days.get('1518-5-12'));
+for (const [key, guard] of guards.entries()) {
+    var asleep = 0;
+    for (var i = 0; i < guard.days.length; i++) {
+        var day = guard.days[i];
+        day.events.sort(sortNumber);
+        //get all the events
+        for (var j = 0; j < day.events.length - 1; j = j + 2){
+            var startsleep = day.events[j];
+            var endsleep = day.events[j+1];
+            if (startsleep > endsleep) console.log("ERROR");
+            asleep += endsleep - startsleep;
+            while (startsleep < endsleep) {
+                guard.instancesasleep[startsleep]++;
+                if (guard.instancesasleep[startsleep] > maxinstance.count) {
+                    maxinstance.guard = guard;
+                    maxinstance.count = guard.instancesasleep[startsleep];
+                }
+                startsleep++;
+            }
+        }
+    }
+    guard.minasleep = asleep;
+    if (max == null || guard.minasleep > max.minasleep) max = guard;
+    //iterate days and count the total time sleeping
+}
 
+//for part 2 we need the guard that is most frequently asleep on the same minute
+
+console.log(maxinstance);
