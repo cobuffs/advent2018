@@ -4,7 +4,6 @@ var fullstring = inputs[0];
 var polyarr = fullstring.split('');
 
 var allunits = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
-var min = 10000;
 for(var i = 0; i < allunits.length; i++) {
     //copy the poly
     var polycopy = polyarr.slice();
@@ -18,9 +17,6 @@ for(var i = 0; i < allunits.length; i++) {
     while (polycopy.indexOf(unitupper) != -1) {
         //remove it
         polycopy.splice(polycopy.indexOf(unitupper), 1);
-    }
-    if (polycopy.length < min){
-        min = polycopy.length;
     }
     console.log(unitlower);
     reactpoly(polycopy);
