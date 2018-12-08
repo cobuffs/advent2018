@@ -56,22 +56,7 @@ while(processed.length != 26) {
     iteration++;
 }
 
-console.log(iteration);
-// part 1
-// while(readytoprocess.length != 0) {
-//     var nodetoprocess = readytoprocess[0];
-//     nodetoprocess.processed = true;
-//     processed.push(nodetoprocess.node);
-//     readytoprocess.shift();
-//     //check each kid
-//     for(var i = 0; i < nodetoprocess.children.length; i++) {
-//         var kid = nodetoprocess.children[i];
-//         if (checkifreadyforprocessing(kid)) {
-//             readytoprocess.push(kid);
-//             readytoprocess.sort(sortsteps);
-//         }
-//     }
-// }
+console.log(iteration - 1);
 
 function workit() {
     //each worker needs to work
