@@ -90,7 +90,7 @@ function buildmasterpoint(x,y,vx,vy) {
 function logascsv(candidate) {
     for(var i = 0; i < candidate.points.length; i++){
         var x = candidate.points[i].x;
-        var y = candidate.points[i].y;
+        var y = candidate.points[i].y * -1;
         console.log("%s,%s",x,y);
     }
 }
