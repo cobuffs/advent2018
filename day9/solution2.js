@@ -1,3 +1,4 @@
+console.time();
 var fs = require('fs');
 var input = fs.readFileSync('input.txt').toString();
 var inputarr = input.split(" ");
@@ -63,6 +64,7 @@ for(var i = 1; i <= finalmarble; i++) {
 }
 
 console.log(highplayer)
+console.timeEnd();
 
 function buildelf(id) {
     var elf = {
