@@ -86,7 +86,6 @@ for(var i = 0; i < numgen; i++) {
         metadata.push(meta);
         console.log(meta);
     }
-    //81k every 1k == 81000 every MM == 81000000 every B == 4,050,000,000 every 50B
 }
 console.log(meta);
 
