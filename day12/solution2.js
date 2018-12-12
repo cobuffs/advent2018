@@ -2,7 +2,7 @@ var fs = require('fs');
 var inputs = fs.readFileSync('input.txt').toString().split("\n");
 //parse input
 var rules = new Map();
-var numgen = 500000000;
+var numgen = 20;
 var prevgen = new Map();
 var curgen = new Map();
 var metadata = [];
@@ -33,6 +33,16 @@ for (var i = 0; i < pots.length; i++) {
         meta.sum += i;
     }
 }
+//pad some pots
+curgen.set(-1,buildpot(-1, '.'));
+curgen.set(-2,buildpot(-2, '.'));
+curgen.set(-3,buildpot(-3, '.'));
+curgen.set(-4,buildpot(-4, '.'));
+curgen.set(pots.length,buildpot(pots.length, '.'));
+curgen.set(pots.length+1,buildpot(pots.length+1, '.'));
+curgen.set(pots.length+2,buildpot(pots.length+2, '.'));
+curgen.set(pots.length+3,buildpot(pots.length+3, '.'));
+
 metadata.push(meta);
 
 for(var i = 0; i < numgen; i++) {
@@ -51,11 +61,11 @@ for(var i = 0; i < numgen; i++) {
         potrule[2] = pot.plant;
         potrule[3] = prevgen.has(pot.id+1) ? prevgen.get(pot.id+1).plant : '.';
         potrule[4] = prevgen.has(pot.id+2) ? prevgen.get(pot.id+2).plant : '.';
-        if (potrule.join('') != '.....'){
+        if (potrule.join('').substr(0,4) != '....'){
             if (!prevgen.has(pot.id-2)) curgen.set(pot.id-2, buildpot(pot.id - 2, '.'));
             if (!prevgen.has(pot.id-1)) curgen.set(pot.id-1, buildpot(pot.id - 1, '.'));
         }
-        if(potrule.join('') != '.....') {
+        if(potrule.join('').substr(1) != '....') {
             if (!prevgen.has(pot.id + 2)) {
                 curgen.set(pot.id + 2, buildpot(pot.id + 2, '.'));
             }
@@ -70,14 +80,7 @@ for(var i = 0; i < numgen; i++) {
         }
         curgen.set(pot.id, newpotstate);
     });
-    // metadata.push(meta);
-    // if(meta.sum == prevmeta.sum) {
-    //     metadata.push(meta);
-    //     convergecount++;
-    // } else {
-    //     metadata = [];
-    //     convergecount = 0;
-    // }
+    metadata.push(meta);
     if ((i+1) % 1000 == 0) {
         //log every 1000 and look for a pattern
         metadata.push(meta);
@@ -85,6 +88,7 @@ for(var i = 0; i < numgen; i++) {
     }
     //81k every 1k == 81000 every MM == 81000000 every B == 4,050,000,000 every 50B
 }
+console.log(meta);
 
 
 function buildpot(id, plant) {
