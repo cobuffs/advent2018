@@ -1,7 +1,8 @@
 var fs = require('fs');
-var inputs = fs.readFileSync('sample.txt').toString().split("\n");
+var inputs = fs.readFileSync('input.txt').toString().split("\n");
 //parse input
 var rules = new Map();
+var numgen = 20;
 var generations = [];
 for(var i = 2; i < inputs.length; i++) {
     var inputarr = inputs[i].split(' => ');
@@ -16,80 +17,88 @@ for (var i = 0; i < pots.length; i++) {
 }
 generations.push(activegen);
 
-//generate!
-for(var i = 0; i < 20; i++) {
-    //for each pot
-    var nextgen = [];
-    for(var j = 0; j < activegen.length; j++) {
-        var rule = [];
-        if (j == 0) {
-            //build -1, -2
-            //build rule
-            rule.push('.');
-            rule.push('.');
-            rule.push(activegen[j].plant);
-            rule.push(activegen[j+1].plant);
-            rule.push(activegen[j+2].plant);
-            if (rule.join('').substr(0,4) != '....') {
-                nextgen.push(buildpot(activegen[j].id - 2, '.'));
-                nextgen.push(buildpot(activegen[j].id - 1, '.'));
-            }
-            //can never recover from '....#' or '.....' so we dont need to add any more neighbors
-            nextgen.push(getpotfromrulearray(activegen[j].id,rule));
-        } else if (j == 1) {
-            //build -2
-            rule.push('.');
-            rule.push(activegen[j-1].plant)
-            rule.push(activegen[j].plant);
-            rule.push(activegen[j+1].plant);
-            rule.push(activegen[j+2].plant);
-            nextgen.push(getpotfromrulearray(activegen[j].id,rule));
-        } else if (j > 1 && j < (activegen.length - 2)) {
-            //regular
-            rule.push(activegen[j-2].plant)
-            rule.push(activegen[j-1].plant)
-            rule.push(activegen[j].plant);
-            rule.push(activegen[j+1].plant);
-            rule.push(activegen[j+2].plant);
-            nextgen.push(getpotfromrulearray(activegen[j].id,rule));
+//generate
+for (var i = 0; i < numgen; i++) {
+    var previousgen = generations[i];
+    var currentgen = [];
+    var numtoadd = 0;
+    var fronthandled = false;
 
-        } else if (j == (activegen.length - 2)) {
-            //build +2
-            rule.push(activegen[j-2].plant)
-            rule.push(activegen[j-1].plant)
-            rule.push(activegen[j].plant);
-            rule.push(activegen[j+1].plant);
-            rule.push('.');
-            nextgen.push(getpotfromrulearray(activegen[j].id,rule));
 
-        } else if (j == (activegen.length - 1)) {
-            //build +1, +2
-            rule.push(activegen[j-2].plant)
-            rule.push(activegen[j-1].plant)
-            rule.push(activegen[j].plant);
-            rule.push('.');
-            rule.push('.');
-            nextgen.push(getpotfromrulearray(activegen[j].id,rule));
-            //can never recover from #....
-            if (rule.join('').substr(1,4) != '....') {
-                nextgen.push(buildpot(activegen[j].id + 1, '.'));
-                nextgen.push(buildpot(activegen[j].id + 2, '.'));
-            }
-        } else console.log("BAD LOGIC");
+    for(var j = 0; j < previousgen.length; j++) {
+        var potrule = new Array(5);
+        potrule[0] = (j-2) >= 0 ? previousgen[j-2].plant : '.';
+        potrule[1] = (j-1) >= 0 ? previousgen[j-1].plant : '.';
+        potrule[2] = previousgen[j].plant;
+        potrule[3] = (j+1) < previousgen.length ? previousgen[j+1].plant : '.';
+        potrule[4] = (j+2) < previousgen.length ? previousgen[j+2].plant : '.';
+        var curpot = getpotfromrulearray(previousgen[j].id, potrule);
+        
+        //handle the front
+        if (j == 0 && potrule.join('').substr(0,4) != '....') {
+            currentgen.push(buildpot(curpot.id - 2, '.'));
+            currentgen.push(buildpot(curpot.id - 1, '.'));
+            fronthandled = true;
+        } else if (j == 1 && potrule.join('').substr(0,4) != '....' && !fronthandled) {
+            //need a plant up front
+            currentgen.splice(0,0,buildpot(curpot.id - 2, '.'));
+        }
+
+        currentgen.push(curpot);
+
+        //handle the back
+        if (j == previousgen.length - 2 && potrule.join('').substr(1) != '....'){
+            numtoadd = 1;
+        } else if (j == previousgen.length - 1 && potrule.join('').substr(1) != '....') {
+            numtoadd = 2;
+        }
+
+        //#region shitty
+        // if((j < 2 || (j+2) > previousgen.length) && (potrule.join('').substr(0,4) != '....' || potrule.join('').substr(1) != '....')) {
+        //     if(j==0) {
+        //         //need 2
+        //         currentgen.splice(0,0,buildpot(curpot.id - 1, '.'));
+        //         currentgenmap.set(curpot.id-1, true);
+        //         currentgen.splice(0,0,buildpot(curpot.id - 2, '.'));
+        //         currentgenmap.set(curpot.id-2, true);
+        //     } else if(j==1 && !currentgenmap.has(curpot.id-2)) {
+        //         currentgen.splice(0,0,buildpot(curpot.id - 2, '.'));
+        //         currentgenmap.set(curpot.id-2, true);
+        //     } 
+        //     if(j == previousgen.length - 2) {
+        //         numtoadd = 1;
+
+        //     } else if(j == previousgen.length - 1) {
+        //         numtoadd = 2;
+        //     }
+        // }
+        //#endregion
+
     }
-    generations.push(nextgen);
-    activegen = nextgen;
+    for(var k = 0; k < numtoadd; k++){
+        //get last id
+        var lastpot = currentgen[currentgen.length-1];
+        currentgen.push(buildpot(lastpot.id+1, '.'));
+    }
+    generations.push(currentgen);
 }
 
 var sum = 0;
+var plantcount = 0;
 var twenty = generations[20];
 for(var i = 0; i < twenty.length; i++) {
     sum += twenty[i].plant == '#' ? twenty[i].id : 0;
+    plantcount += twenty[i].plant == '#' ? 1 : 0;
+
 }
 console.log(sum);
+console.log(plantcount);
 
 function getpotfromrulearray(id, rulearr) {
-    if (!rules.has(rulearr.join(''))) return buildpot(id, '.');
+    if (!rules.has(rulearr.join(''))) {
+        console.log('uh oh');
+        return buildpot(id, '.');
+    }
     return buildpot(id, rules.get(rulearr.join('')));
 }
 
