@@ -15,6 +15,10 @@ var activegen = [];
 for (var i = 0; i < pots.length; i++) {
     activegen.push(buildpot(i,pots[i]));
 }
+
+//pad some pots - 4 on each side
+activegen.splice(0,0,buildpot(-4,'.'),buildpot(-3,'.'),buildpot(-2,'.'),buildpot(-1,'.'));
+activegen.push(buildpot(pots.length,'.'),buildpot(pots.length+1,'.'),buildpot(pots.length+2,'.'),buildpot(pots.length+3,'.'));
 generations.push(activegen);
 
 //generate
