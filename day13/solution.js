@@ -242,7 +242,7 @@ while(carttracker.size != 1) {
             if(typeof newspace == 'undefined') console.log("ERROR");
             if(newspace.cart != null) {
                 //remove both carts
-                console.log("BANG at tick %s between %s and %s", cart.id, newspace.cart.id);
+                console.log("BANG at tick %s between %s and %s", tick, cart.id, newspace.cart.id);
                 carttracker.delete(cart.id);
                 carttracker.delete(newspace.cart.id);
                 space.cart = null;
@@ -260,7 +260,7 @@ while(carttracker.size != 1) {
     }
 }
 
-carttracker.forEach(cart => {console.log(cart.square.x, cart.square.y);});
+carttracker.forEach(cart => {console.log(getsquarestring(cart.square));});
 function buildsquare(x,y,type,cart) {
     return {
         "x": x,
