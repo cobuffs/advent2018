@@ -4,7 +4,7 @@ var inputs = fs.readFileSync('input.txt').toString().split("\n");
 //array of actors (elves and gobbos) with stats
 var gobbos = new Map();
 var elves = new Map();
-var elfpower = 14;
+var elfpower = 3;
 var gobbopower = 3;
 var startinghp = 200;
 var simcount = 1;
@@ -15,48 +15,38 @@ var actorcount = 0;
 var spacecount = 0;
 var validspacecount = 0;
 //build the map
-var map = new Array(inputs.length);
-var mappieces = new Map();
-
+var map;
+var mappieces;
 //start executing turns
 var roundscompleted = 0;
 var currentround = 0;
 
 function reset(){
-    //resurrect
-    for(var i = 0; i < deadactors.length; i++) {
-        var actor = deadactors[i];
-        actor.cursquare = actor.originalspace;
-        var source;
-        if(actor.type === 'E') source = elves;
-        else source = gobbos;
-        source.set(actor.id, actor);
+    elves = new Map();
+    gobbos = new Map();
+    map = new Array(inputs.length);
+    mappieces = new Map();
+
+    for(var i = 0; i < inputs.length; i ++) {
+        var spaces = inputs[i].split('');
+        map[i] = [];
+        for(var j = 0; j < spaces.length; j++) {
+            var space = spaces[j];
+            var mappiece = buildspace(spacecount++, (space === 'E' | space === 'G' | space === '.') ? '.' : space, j, i, null);
+            //check for actor
+            if(space === 'E' || space === 'G'){
+                var actor = buildactor(actorcount++, space, mappiece);
+                mappiece.actor = actor;
+                
+            }
+            mappieces.set(getspacestring(mappiece), mappiece);
+            map[i].push(mappiece);
+    //        process.stdout.write(mappiece.type);
+            if(mappiece.type === '.') validspacecount++;
+        }
+    //    process.stdout.write("\n");
     }
     deadactors = [];
-
-    elves.forEach(elf => {
-        if (elf.cursquare.actor != null) {
-            elf.cursquare.actor = null;
-        }
-        elf.cursquare = elf.originalspace;
-        elf.hp = startinghp;
-        elf.attack = elfpower;
-        elf.cursquare.actor = elf;
-        elf.potentialfield = new Map();
-        elf.possibletargets = new Map();
-    });
-
-    gobbos.forEach(gobbo => {
-        if(gobbo.cursquare.actor != null) {   
-            gobbo.cursquare.actor = null;
-        }
-        gobbo.cursquare = gobbo.originalspace;
-        gobbo.cursquare.actor = gobbo;
-        gobbo.hp = startinghp;
-        gobbo.potentialfield = new Map();
-        gobbo.possibletargets = new Map();
-    });
-
     roundscompleted = 0;
     currentround = 0;
 
@@ -65,25 +55,7 @@ function reset(){
 
 }
 //#region "init"
-for(var i = 0; i < inputs.length; i ++) {
-    var spaces = inputs[i].split('');
-    map[i] = [];
-    for(var j = 0; j < spaces.length; j++) {
-        var space = spaces[j];
-        var mappiece = buildspace(spacecount++, (space === 'E' | space === 'G' | space === '.') ? '.' : space, j, i, null);
-        //check for actor
-        if(space === 'E' || space === 'G'){
-            var actor = buildactor(actorcount++, space, mappiece);
-            mappiece.actor = actor;
-            
-        }
-        mappieces.set(getspacestring(mappiece), mappiece);
-        map[i].push(mappiece);
-//        process.stdout.write(mappiece.type);
-        if(mappiece.type === '.') validspacecount++;
-    }
-//    process.stdout.write("\n");
-}
+
 
 //build field for all actors across the whole grid
 calcfields();
@@ -263,19 +235,23 @@ function simulate(simcount) {
         }
         if(gobbos.size > 0 && elves.size > 0 && queue.length == 0) roundscompleted++;
     }
-    
+    var sumofwinners = 0;
+    var winners;
+    if(gobbos.size > 0) winners = gobbos;
+    else winners = elves;
+    winners.forEach(survivor => {
+        sumofwinners+= survivor.hp;
+    });
+    console.log("Winner: %s, Rounds: %s, Num Survivors: %s, Survivor Total HP: %s, ATK: %s, Score: %s", gobbos.size > 0 ? 'Goblins!' : 'Elves!', roundscompleted, gobbos.size > 0 ? gobbos.size : elves.size, sumofwinners, elfpower, (roundscompleted)*sumofwinners);
+
 }
 //simulate until elves suffer no losses
-simulate(simcount);
-var sumofwinners = 0;
-var winners;
-if(gobbos.size > 0) winners = gobbos;
-else winners = elves;
-winners.forEach(survivor => {
-    sumofwinners+= survivor.hp;
-});
-
-console.log("Winner: %s, Rounds: %s, Num Survivors: %s, Survivor Total HP: %s, Score: %s", gobbos.size > 0 ? 'Goblins!' : 'Elves!', roundscompleted, gobbos.size > 0 ? gobbos.size : elves.size, sumofwinners, (roundscompleted)*sumofwinners);
+while(true) {
+    reset();
+    simulate();
+    if(elves.size == 10) break;
+    else elfpower++;
+}
 
 function printboard(){
     process.stdout.write('########## ROUND ' + currentround + ' ###########\n')
@@ -293,7 +269,7 @@ function buildactor(id, type, square) {
         "id": id,
         "type": type,
         "attack": type === 'E' ? elfpower : gobbopower,
-        "hp": 200,
+        "hp": startinghp,
         "cursquare": square,
         "originalspace": square,
         "potentialfield": new Map(),
@@ -426,7 +402,7 @@ function combat(actor) {
             deadactors.push(enemy);
             wipepossibletargets();
             calcfields();
-            console.log("%s died in round %s", enemy.type, currentround);
+            //console.log("%s died in round %s", enemy.type, currentround);
         }
     }
     return fight;
