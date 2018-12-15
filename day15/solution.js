@@ -1,5 +1,5 @@
 var fs = require('fs');
-var inputs = fs.readFileSync('sample.txt').toString().split("\n");
+var inputs = fs.readFileSync('sample2.txt').toString().split("\n");
 
 //array of actors (elves and gobbos) with stats
 var gobbos = new Map();
@@ -15,6 +15,7 @@ var validspacecount = 0;
 var map = new Array(inputs.length);
 var mappieces = new Map();
 
+//#region "init"
 for(var i = 0; i < inputs.length; i ++) {
     var spaces = inputs[i].split('');
     map[i] = [];
@@ -36,49 +37,8 @@ for(var i = 0; i < inputs.length; i ++) {
 }
 
 //build field for all actors across the whole grid
-gobbos.forEach(gobbo => {
-    buildpotential(gobbo);
-});
-
-elves.forEach(elf => {
-    buildpotential(elf);
-});
-
-// function buildpossiblemovestoward(actor) {
-//     actor.possiblemovestoward = new Map();
-
-//     var space = actor.cursquare;
-//     //start on current space
-//     var queue = [];
-//     queue.push(space);
-//     actor.possiblemovestoward.set(space.x + "," + space.y, 0);
-//     while(queue.length > 0){
-//         //pop it
-//         space = queue[0];
-//         queue.shift();
-//         var breadth = actor.possiblemovestoward.get(space.x + "," + space.y) + 1;
-//         //a space is only considered if it is unoccupied && mappieces.get(space.x + "," + (space.y+1)).actor == null
-//         //work it
-//         if(space.y - 1 > 0 && mappieces.get(space.x + "," + (space.y-1)).actor == null && mappieces.get(space.x + "," + (space.y-1)).type === "." && !actor.possiblemovestoward.has(space.x + "," + (space.y-1))) {
-//             queue.push(mappieces.get(space.x + "," + (space.y-1)));
-//             actor.possiblemovestoward.set(space.x + "," + (space.y-1), breadth);
-//         }
-//         if(space.y + 1 < map.length && mappieces.get(space.x + "," + (space.y-1)).actor == null && mappieces.get(space.x + "," + (space.y+1)).type === "." && !actor.possiblemovestoward.has(space.x + "," + (space.y+1))) {
-//             queue.push(mappieces.get(space.x + "," + (space.y+1)));
-//             actor.potentialfield.set(space.x + "," + (space.y+1), breadth);        
-//         }
-//         if((space.x + 1) < map[space.y].length && mappieces.get((space.x+1) + "," + (space.y)).actor == null &&  mappieces.get((space.x+1) + "," + space.y).type === "." && !actor.possiblemovestoward.has((space.x+1) + "," + space.y)) {
-//             queue.push(mappieces.get((space.x+1) + "," + (space.y)));
-//             actor.possiblemovestoward.set((space.x+1) + "," + (space.y), breadth);        
-//         }
-//         if((space.x - 1) > 0 && mappieces.get((space.x-1) + "," + (space.y)).actor == null && mappieces.get((space.x-1) + "," + space.y).type === "." && !actor.possiblemovestoward.has((space.x-1) + "," + space.y)) {
-//             queue.push(mappieces.get((space.x-1) + "," + (space.y)));
-//             actor.possiblemovestoward.set((space.x-1) + "," + (space.y), breadth);   
-//         }
-//     }
-
-// }
-
+calcfields();
+//#endregion
 function buildpotential(actor) {
     //go until all valid spaces have been accounted for
     //wipe it out
@@ -99,30 +59,81 @@ function buildpotential(actor) {
         var breadth = actor.potentialfield.get(space.x + "," + space.y) + 1;
         //a space is only considered if it is unoccupied && mappieces.get(space.x + "," + (space.y+1)).actor == null
         //work it
-        if(space.y - 1 > 0 && mappieces.get(space.x + "," + (space.y-1)).type === "." && !actor.potentialfield.has(space.x + "," + (space.y-1))) {
-            queue.push(mappieces.get(space.x + "," + (space.y-1)));
-            actor.potentialfield.set(space.x + "," + (space.y-1), breadth);
+        var coordstr = space.x + "," + (space.y-1);
+        if(space.y - 1 > 0 && mappieces.get(coordstr).type === "." && !actor.potentialfield.has(coordstr)) {
+            //if we hit an enemy, add it as a potential combatant along with the distance
+            var pieceup = mappieces.get(coordstr);
+            if(pieceup.actor !== null) {
+                if (pieceup.actor.type !== actor.type) {
+                    if (!pieceup.actor.possibletargets.has(actor.id)) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    } else if (pieceup.actor.possibletargets.get(actor.id).dist > breadth) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    }
+                }
+            } else {
+                queue.push(pieceup);
+                actor.potentialfield.set(coordstr, breadth);                
+            }
         }
-        if(space.y + 1 < map.length && mappieces.get(space.x + "," + (space.y+1)).type === "." && !actor.potentialfield.has(space.x + "," + (space.y+1))) {
-            queue.push(mappieces.get(space.x + "," + (space.y+1)));
-            actor.potentialfield.set(space.x + "," + (space.y+1), breadth);        
+        coordstr = space.x + "," + (space.y+1);
+        if(space.y + 1 < map.length && mappieces.get(coordstr).type === "." && !actor.potentialfield.has(coordstr)) {
+            var pieceup = mappieces.get(coordstr);
+            if(pieceup.actor !== null) {
+                if (pieceup.actor.type !== actor.type) {
+                    if (!pieceup.actor.possibletargets.has(actor.id)) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    } else if (pieceup.actor.possibletargets.get(actor.id).dist > breadth) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    }
+                }
+            } else {
+                queue.push(pieceup);
+                actor.potentialfield.set(coordstr, breadth);                
+            }
         }
-        if((space.x + 1) < map[space.y].length && mappieces.get((space.x+1) + "," + space.y).type === "." && !actor.potentialfield.has((space.x+1) + "," + space.y)) {
-            queue.push(mappieces.get((space.x+1) + "," + (space.y)));
-            actor.potentialfield.set((space.x+1) + "," + (space.y), breadth);        
+        coordstr = (space.x+1) + "," + space.y;
+        if((space.x + 1) < map[space.y].length && mappieces.get(coordstr).type === "." && !actor.potentialfield.has(coordstr)) {
+            var pieceup = mappieces.get(coordstr);
+            if(pieceup.actor !== null) {
+                if (pieceup.actor.type !== actor.type) {
+                    if (!pieceup.actor.possibletargets.has(actor.id)) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    } else if (pieceup.actor.possibletargets.get(actor.id).dist > breadth) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    }
+                }
+            } else {
+                queue.push(pieceup);
+                actor.potentialfield.set(coordstr, breadth);                
+            }
         }
-        if((space.x - 1) > 0 && mappieces.get((space.x-1) + "," + space.y).type === "." && !actor.potentialfield.has((space.x-1) + "," + space.y)) {
-            queue.push(mappieces.get((space.x-1) + "," + (space.y)));
-            actor.potentialfield.set((space.x-1) + "," + (space.y), breadth);   
+        coordstr = (space.x-1) + "," + space.y;
+        if((space.x - 1) > 0 && mappieces.get(coordstr).type === "." && !actor.potentialfield.has(coordstr)) {
+            var pieceup = mappieces.get(coordstr);
+            if(pieceup.actor !== null) {
+                if (pieceup.actor.type !== actor.type) {
+                    if (!pieceup.actor.possibletargets.has(actor.id)) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    } else if (pieceup.actor.possibletargets.get(actor.id).dist > breadth) {
+                        pieceup.actor.possibletargets.set(actor.id, {"actor":actor, "dist": breadth});
+                    }
+                }
+            } else {
+                queue.push(pieceup);
+                actor.potentialfield.set(coordstr, breadth);                
+            }
         }
     }
 }
 
 //start executing turns
-var round = 0;
+var roundscompleted = 0;
+var currentround = 0;
 //we loop until all enemies are destroyed
 while(gobbos.size > 0 && elves.size > 0) {
-    round++;
+    currentround++;
+    printboard();
     //need to determine actor order
     var queue = buildturnqueue();
     //pop it, check if they are still alive, then move or attack
@@ -134,60 +145,27 @@ while(gobbos.size > 0 && elves.size > 0) {
             //move or attack
             //find nearest enemy
             //check for neighbors - they won't be returned by nearest enemy fields
-            var fight = false;
-            var enemy = null;
-            var N = actor.cursquare.x + "," + (actor.cursquare.y-1);
-            var W = (actor.cursquare.x-1) + "," + actor.cursquare.y;
-            var E = (actor.cursquare.x+1) + "," + actor.cursquare.y;
-            var S = actor.cursquare.x + "," + (actor.cursquare.y+1);
-            if(mappieces.has(N) && mappieces.get(N).actor != null && mappieces.get(N).actor.type !== actor.type) {
-                //fight!
-                fight = true;
-                enemy = mappieces.get(N).actor;
-            } else if (mappieces.has(W) && mappieces.get(W).actor != null && mappieces.get(W).actor.type !== actor.type){
-                fight = true;
-                enemy = mappieces.get(W).actor;
-            } else if (mappieces.has(E) && mappieces.get(E).actor != null && mappieces.get(E).actor.type !== actor.type){
-                fight = true;
-                enemy = mappieces.get(E).actor;
-            } else if (mappieces.has(S) && mappieces.get(S).actor != null && mappieces.get(S).actor.type !== actor.type){
-                fight = true;
-                enemy = mappieces.get(S).actor;
-            }
-            if(fight) {
-                enemy.hp = enemy.hp - actor.attack;
-                if(enemy.hp < 0){
-                    //remove them from the game!
-                    if(actor.type === 'E') gobbos.delete(enemy.id);
-                    else elves.delete(enemy.id);
-                    //remove them from the board
-                    enemy.cursquare.actor = null;
-                    enemy.cursquare = null;
-                    deadactors.push(enemy);
-                }
-            } else {
+            if(!combat(actor)) {
                 //move
                 //find nearest enemy by looking up my coords against all enemy potential fields
                 var enemies;
-                if(actor.type === 'E') enemies = gobbos;
-                else enemies = elves;
                 var nearestdist = 1000;
                 var nearestenemies = [];
                 var currentcoords = actor.cursquare.x + "," + actor.cursquare.y;
-                enemies.forEach(enemy => {
-                    //look up my coords in their potential
-                    //if it doesnt exist that means the path is blocked
-                    if (enemy.potentialfield.has(currentcoords)) {
-                        var dist = enemy.potentialfield.get(currentcoords);
-                        if (dist < nearestdist) {
-                            nearestdist = dist;
-                            nearestenemies = [];
-                            nearestenemies.push(enemy);
-                        } else if (dist == nearestdist){
-                            nearestenemies.push(enemy);
-                        }
+                actor.possibletargets.forEach(target => {
+                    if (target.dist < nearestdist) {
+                        nearestenemies = [];
+                        nearestdist = target.dist;
+                        nearestenemies.push(target.actor);
+                    } else if (target.dist == nearestdist) {
+                        nearestenemies.push(target.actor);
                     }
                 });
+                //freeze if we cant move closer to any enemies
+                if(nearestenemies.length == 0){ 
+                    queue.shift();
+                    continue;
+                }
                 var nearestenemy = nearestenemies[0];
                 for(var i = 1; i < nearestenemies.length; i++){
                     //pick the one with the lowest y. if those are tied, pick the one with the lowest x;
@@ -199,7 +177,11 @@ while(gobbos.size > 0 && elves.size > 0) {
                 }
                 //move closer to it by checking all potential moves to see if it gets you closer
                 var newdist = null;
-                var newcoord = actor.cursquare.x + "," + actor.cursquare.y;;
+                var newcoord = actor.cursquare.x + "," + actor.cursquare.y;
+                var N = actor.cursquare.x + "," + (actor.cursquare.y-1);
+                var W = (actor.cursquare.x-1) + "," + actor.cursquare.y;
+                var E = (actor.cursquare.x+1) + "," + actor.cursquare.y;
+                var S = actor.cursquare.x + "," + (actor.cursquare.y+1);
                 if (nearestenemy.potentialfield.has(N) && (newdist == null || nearestenemy.potentialfield.get(N) < newdist)) {
                     newcoord = N;
                     newdist = nearestenemy.potentialfield.get(N)
@@ -223,24 +205,37 @@ while(gobbos.size > 0 && elves.size > 0) {
                 newspace.actor = actor;
                 actor.cursquare.actor = null;
                 actor.cursquare = newspace;
-                //calc my potential field
-                buildpotential(actor);
-
+                wipepossibletargets();
+                calcfields();
+                //fight!!!
+                combat(actor);
+                //calc all potential fields
             }
         }
         queue.shift();
     }
-    printboard();
-    
+    roundscompleted++;
 }
 
+var sumofwinners = 0;
+var winners;
+if(gobbos.size > 0) winners = gobbos;
+else winners = elves;
+winners.forEach(survivor => {
+    sumofwinners+= survivor.hp;
+});
+
+console.log("Winner: %s, Rounds: %s, Survivor Total HP: %s, Score: %s", gobbos.size > 0 ? 'Goblins!' : 'Elves!', roundscompleted, sumofwinners, (roundscompleted)*sumofwinners);
+
 function printboard(){
+    process.stdout.write('########## ROUND ' + currentround + ' ###########\n')
     for(var y = 0; y < map.length; y++){
         for (var x = 0; x < map[y].length; x++){
             process.stdout.write((map[y][x].actor != null ? map[y][x].actor.type : map[y][x].type));
         }
         process.stdout.write('\n');
     }
+    process.stdout.write('\n');
 }
 
 function buildactor(id, type, square) {
@@ -250,7 +245,8 @@ function buildactor(id, type, square) {
         "attack": 3,
         "hp": 200,
         "cursquare": square,
-        "potentialfield": new Map()
+        "potentialfield": new Map(),
+        "possibletargets": new Map()
     };
     if(type === "E") elves.set(actor.id, actor);
     if(type === "G") gobbos.set(actor.id, actor);
@@ -294,4 +290,67 @@ function buildturnqueue(){
 
 function getspacestring(space) {
     return space.x + ',' + space.y;
+}
+
+function sortdist(a, b) {
+    return a.dist - b.dist;
+}
+
+function calcfields(){
+    gobbos.forEach(gobbo => {
+        buildpotential(gobbo);
+    });
+    
+    elves.forEach(elf => {
+        buildpotential(elf);
+    });
+}
+
+function wipepossibletargets(){
+    gobbos.forEach(gobbo => {
+        gobbo.possibletargets = new Map();
+    });
+    
+    elves.forEach(elf => {
+        elf.possibletargets = new Map();
+    });
+}
+
+function combat(actor) {
+    var fight = false;
+    var enemy = null;
+    var N = actor.cursquare.x + "," + (actor.cursquare.y-1);
+    var W = (actor.cursquare.x-1) + "," + actor.cursquare.y;
+    var E = (actor.cursquare.x+1) + "," + actor.cursquare.y;
+    var S = actor.cursquare.x + "," + (actor.cursquare.y+1);
+    if(mappieces.has(N) && mappieces.get(N).actor != null && mappieces.get(N).actor.type !== actor.type) {
+        //fight!
+        fight = true;
+        enemy = mappieces.get(N).actor;
+    } else if (mappieces.has(W) && mappieces.get(W).actor != null && mappieces.get(W).actor.type !== actor.type){
+        fight = true;
+        enemy = mappieces.get(W).actor;
+    } else if (mappieces.has(E) && mappieces.get(E).actor != null && mappieces.get(E).actor.type !== actor.type){
+        fight = true;
+        enemy = mappieces.get(E).actor;
+    } else if (mappieces.has(S) && mappieces.get(S).actor != null && mappieces.get(S).actor.type !== actor.type){
+        fight = true;
+        enemy = mappieces.get(S).actor;
+    }
+    if(fight) {
+        enemy.hp = enemy.hp - actor.attack;
+        if(enemy.hp < 0){
+            //remove them from the game!
+            if(actor.type === 'E') gobbos.delete(enemy.id);
+            else elves.delete(enemy.id);
+            //remove them from the board
+            enemy.cursquare.actor = null;
+            enemy.cursquare = null;
+            deadactors.push(enemy);
+            wipepossibletargets();
+            calcfields();
+            console.log("%s died in round %s", enemy.type, currentround);
+        }
+    }
+    return fight;
 }
