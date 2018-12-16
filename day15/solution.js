@@ -251,27 +251,29 @@ function simulate() {
     console.log("Winner: %s, Rounds: %s, Num Survivors: %s, Survivor Total HP: %s, ATK: %s, Score: %s", gobbos.size > 0 ? 'Goblins!' : 'Elves!', roundscompleted, gobbos.size > 0 ? gobbos.size : elves.size, sumofwinners, elfpower, (roundscompleted)*sumofwinners);
 }
 //simulate until elves suffer no losses
+var part1 = false;
 while(true) {
     reset();
     simulate();
-    if(elves.size == elfcount) break;
+    if(elves.size == elfcount || part1) break;
     else elfpower++;
 }
 
 function printboard(){
-    process.stdout.write('########## ROUND ' + currentround + ' ###########\n')
+    var outstr = '\n\n # # # # # # # # # # # # # ROUND ' + currentround + ' # # # # # # # # # # # # # # #\n';
     for(var y = 0; y < map.length; y++){
         var actorstr = [];
         for (var x = 0; x < map[y].length; x++){
-            process.stdout.write((map[y][x].actor !== null ? map[y][x].actor.type : map[y][x].type));
+            outstr += (map[y][x].actor !== null ? (map[y][x].actor.type === 'E' ? '🧝' : '👺' ): ' ' + map[y][x].type);
             if(map[y][x].actor != null) {
                 var actor = map[y][x].actor; 
                 actorstr.push(" (" + actor.type + "): "+ actor.hp);
             }
         }
-        process.stdout.write(actorstr.join('') + '\n');
+        outstr += actorstr.join('') + '\n';
     }
-    process.stdout.write('\n');
+    outstr += '\n';
+    process.stdout.write(outstr);
 }
 
 function buildactor(id, type, square) {
