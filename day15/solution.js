@@ -20,13 +20,18 @@ var mappieces;
 //start executing turns
 var roundscompleted = 0;
 var currentround = 0;
+var elfcount = 0;
 
 function reset(){
+    //null out all gobbos and elves
+
     elves = new Map();
     gobbos = new Map();
     map = new Array(inputs.length);
     mappieces = new Map();
-
+    elfcount = 0;
+    actorcount = 0;
+    //global.gc();
     for(var i = 0; i < inputs.length; i ++) {
         var spaces = inputs[i].split('');
         map[i] = [];
@@ -58,7 +63,6 @@ function reset(){
 
 
 //build field for all actors across the whole grid
-calcfields();
 //#endregion
 function buildpotential(actor) {
     //go until all valid spaces have been accounted for
@@ -150,9 +154,10 @@ function buildpotential(actor) {
 
 
 //we loop until all enemies are destroyed
-function simulate(simcount) {
+function simulate() {
     while(gobbos.size > 0 && elves.size > 0) {
         currentround++;
+        printboard();
         //need to determine actor order
         var queue = buildturnqueue();
         //pop it, check if they are still alive, then move or attack
@@ -230,6 +235,7 @@ function simulate(simcount) {
                     combat(actor);
                     //calc all potential fields
                 }
+                //printboard();
             }
             queue.shift();
         }
@@ -243,23 +249,27 @@ function simulate(simcount) {
         sumofwinners+= survivor.hp;
     });
     console.log("Winner: %s, Rounds: %s, Num Survivors: %s, Survivor Total HP: %s, ATK: %s, Score: %s", gobbos.size > 0 ? 'Goblins!' : 'Elves!', roundscompleted, gobbos.size > 0 ? gobbos.size : elves.size, sumofwinners, elfpower, (roundscompleted)*sumofwinners);
-
 }
 //simulate until elves suffer no losses
 while(true) {
     reset();
     simulate();
-    if(elves.size == 10) break;
+    if(elves.size == elfcount) break;
     else elfpower++;
 }
 
 function printboard(){
     process.stdout.write('########## ROUND ' + currentround + ' ###########\n')
     for(var y = 0; y < map.length; y++){
+        var actorstr = [];
         for (var x = 0; x < map[y].length; x++){
-            process.stdout.write((map[y][x].actor != null ? map[y][x].actor.type : map[y][x].type));
+            process.stdout.write((map[y][x].actor !== null ? map[y][x].actor.type : map[y][x].type));
+            if(map[y][x].actor != null) {
+                var actor = map[y][x].actor; 
+                actorstr.push(" (" + actor.type + "): "+ actor.hp);
+            }
         }
-        process.stdout.write('\n');
+        process.stdout.write(actorstr.join('') + '\n');
     }
     process.stdout.write('\n');
 }
@@ -275,7 +285,10 @@ function buildactor(id, type, square) {
         "potentialfield": new Map(),
         "possibletargets": new Map()
     };
-    if(type === "E") elves.set(actor.id, actor);
+    if(type === "E") {
+        elves.set(actor.id, actor);
+        elfcount++;
+    }
     if(type === "G") gobbos.set(actor.id, actor);
     return actor;
 }
@@ -351,7 +364,7 @@ function combat(actor) {
     var E = (actor.cursquare.x+1) + "," + actor.cursquare.y;
     var S = actor.cursquare.x + "," + (actor.cursquare.y+1);
     var targets = [];
-    var minhp = 500;
+    var minhp = startinghp + 1;
     if(mappieces.has(N) && mappieces.get(N).actor != null && mappieces.get(N).actor.type !== actor.type) {
         //fight!
         fight = true;
@@ -400,6 +413,7 @@ function combat(actor) {
             enemy.cursquare.actor = null;
             enemy.cursquare = null;
             deadactors.push(enemy);
+            printboard();
             wipepossibletargets();
             calcfields();
             //console.log("%s died in round %s", enemy.type, currentround);
