@@ -52,6 +52,10 @@ for(var i = 0; i < inputs.length; i++){
 }
 var mastercount = 0;
 var totalcount = 0;
+//#region debug
+var count = new Array(16);
+count.fill(0);
+//#endregion
 opscodes.forEach(code => {
     //check each of the 16 ops to see if they are valid
     var testops = code.ops;
@@ -64,215 +68,86 @@ opscodes.forEach(code => {
         if((op.regb[op.instruction.A] + op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
             //make sure the other registers didn't change
             //create reg copys to compare
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[0] = true;
-                countofoptions++;
-            }
+            countofoptions += check(0,code,op);
         }
 
         //1:addi (add immediate) stores into register C the result of adding register A and value B.
         if((op.regb[op.instruction.A] + op.instruction.B) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[1] = true;
-                countofoptions++;
-            }
+            countofoptions += check(1,code,op);
         }
 
         //2:mulr (multiply register) stores into register C the result of multiplying register A and register B.
         if((op.regb[op.instruction.A] * op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[2] = true;
-                countofoptions++;
-            }
+            countofoptions += check(2,code,op);
         }
 
         //3:muli (multiply immediate) stores into register C the result of multiplying register A and value B.
         if((op.regb[op.instruction.A] * op.instruction.B) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[3] = true;
-                countofoptions++;
-            }
+            countofoptions += check(3,code,op);
         }
         
-
         //4:banr (bitwise AND register) stores into register C the result of the bitwise AND of register A and register B.
         if((op.regb[op.instruction.A] & op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[4] = true;
-                countofoptions++;
-            }
+            countofoptions += check(4,code,op);
         }
 
         //5:bani (bitwise AND immediate) stores into register C the result of the bitwise AND of register A and value B.
         if((op.regb[op.instruction.A] & op.instruction.B) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[5] = true;
-                countofoptions++;
-            }
+            countofoptions += check(5,code,op);
         }
 
         //6:borr (bitwise OR register) stores into register C the result of the bitwise OR of register A and register B.
         if((op.regb[op.instruction.A] | op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[6] = true;
-                countofoptions++;
-            }
+            countofoptions += check(6,code,op);
         }
 
         //7:bori (bitwise OR immediate) stores into register C the result of the bitwise OR of register A and value B.
         if((op.regb[op.instruction.A] | op.instruction.B) == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[7] = true;
-                countofoptions++;
-            }
+            countofoptions += check(7,code,op);
         }
 
         //8:setr (set register) copies the contents of register A into register C. (Input B is ignored.)
         if(op.regb[op.instruction.A] == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[8] = true;
-                countofoptions++;
-            }
+            countofoptions += check(8,code,op);
         }
 
         //9:seti (set immediate) stores value A into register C. (Input B is ignored.)
         if(op.instruction.A == op.rega[op.instruction.C]) {
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[9] = true;
-                countofoptions++;
-            }
+            countofoptions += check(9,code,op);
         }
 
         //10:gtir (greater-than immediate/register) sets register C to 1 if value A is greater than register B. Otherwise, register C is set to 0.
         if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
            ((op.instruction.A > op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1) || (op.instruction.A <= op.regb[op.instruction.B] && op.rega[op.instruction.C] == 0))){
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[10] = true;
-                countofoptions++;
-            }
+            countofoptions += check(10,code,op);
         }
         
         //11:gtri (greater-than register/immediate) sets register C to 1 if register A is greater than value B. Otherwise, register C is set to 0.
         if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
            ((op.regb[op.instruction.A] > op.instruction.B && op.rega[op.instruction.C] == 1) || (op.regb[op.instruction.A] <= op.instruction.B && op.rega[op.instruction.C] == 0))){
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[11] = true;
-                countofoptions++;
-            }
+            countofoptions += check(11,code,op);
         }
         
         //12:gtrr (greater-than register/register) sets register C to 1 if register A is greater than register B. Otherwise, register C is set to 0.
         if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
            ((op.regb[op.instruction.A] > op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1) || (op.regb[op.instruction.A] <= op.regb[op.instruction.B] && op.rega[op.instruction.C] == 0))){
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[12] = true;
-                countofoptions++;
-            }
+            countofoptions += check(12,code,op);
         }
 
         //13:eqir (equal immediate/register) sets register C to 1 if value A is equal to register B. Otherwise, register C is set to 0.
         if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
            (op.instruction.A == op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1)){
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[13] = true;
-                countofoptions++;
-            }
+            countofoptions += check(13,code,op);
         }
         //14:eqri (equal register/immediate) sets register C to 1 if register A is equal to value B. Otherwise, register C is set to 0.
         if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
            (op.rega[op.instruction.A] == op.instruction.B && op.rega[op.instruction.C] == 1)){
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[14] = true;
-                countofoptions++;
-            }
+            countofoptions += check(14,code,op);
         }
         //15:eqrr (equal register/register) sets register C to 1 if register A is equal to register B. Otherwise, register C is set to 0.
         if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
            (op.regb[op.instruction.A] == op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1)){
-            var regac = op.rega.slice();
-            var regbc = op.regb.slice();
-            //remove reg C
-            regac.splice(op.instruction.C, 1);
-            regbc.splice(op.instruction.C, 1);
-            if(arraysEqual(regac, regbc)) {
-                code.possibleops[15] = true;
-                countofoptions++;
-            }
+            countofoptions += check(15,code,op);
         }
         if (countofoptions >= 3) mastercount++;
         //#endregion        
@@ -298,8 +173,21 @@ function arraysEqual(arr1, arr2) {
     return true;
 }
 
-var opsfuncts = [
+function check(opid,code,op) {
+    var regac = op.rega.slice();
+    var regbc = op.regb.slice();
+    //remove reg C
+    regac.splice(op.instruction.C, 1);
+    regbc.splice(op.instruction.C, 1);
+    if(arraysEqual(regac, regbc)) {
+        code.possibleops[opid] = true;
+        count[opid] = count[opid]+1;
+        return 1;
+    } else {
+        console.log("SHOULD THIS HAPPEN?!");
+        return 0;
+    }
+}
 
-];
-
+console.log(count);
 console.log("3 or more: %s, Total: %s", mastercount,totalcount);
