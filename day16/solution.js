@@ -218,38 +218,63 @@ function check(opid,code,op) {
     }
 }
 
-// 0	13
-opscodes.get(0).isop = 13;
-// 1	6
-opscodes.get(1).isop = 6;
-// 2	0
-opscodes.get(2).isop = 0;
-// 3	11
-opscodes.get(3).isop = 11;
-// 4	3
-opscodes.get(4).isop = 3;
-// 5	10
-opscodes.get(5).isop = 10;
-// 6	2
-opscodes.get(6).isop = 2;
-// 7	4
-opscodes.get(7).isop = 4;
-// 8	7
-opscodes.get(8).isop = 7;
-// 9	14
-opscodes.get(9).isop = 14;
-// 10	15
-opscodes.get(10).isop = 15;
-// 11	5
-opscodes.get(11).isop = 5;
-// 12	8
-opscodes.get(12).isop = 8;
-// 13	12
-opscodes.get(13).isop = 12;
-// 14	1
-opscodes.get(14).isop = 1;
-// 15	9
-opscodes.get(15).isop = 9;
+//did these on a spreadsheeet :\ - lets try to figure it out programmatically
+// // 0	13
+// opscodes.get(0).isop = 13;
+// // 1	6
+// opscodes.get(1).isop = 6;
+// // 2	0
+// opscodes.get(2).isop = 0;
+// // 3	11
+// opscodes.get(3).isop = 11;
+// // 4	3
+// opscodes.get(4).isop = 3;
+// // 5	10
+// opscodes.get(5).isop = 10;
+// // 6	2
+// opscodes.get(6).isop = 2;
+// // 7	4
+// opscodes.get(7).isop = 4;
+// // 8	7
+// opscodes.get(8).isop = 7;
+// // 9	14
+// opscodes.get(9).isop = 14;
+// // 10	15
+// opscodes.get(10).isop = 15;
+// // 11	5
+// opscodes.get(11).isop = 5;
+// // 12	8
+// opscodes.get(12).isop = 8;
+// // 13	12
+// opscodes.get(13).isop = 12;
+// // 14	1
+// opscodes.get(14).isop = 1;
+// // 15	9
+// opscodes.get(15).isop = 9;
+
+var upforgrabs = new Array(16);
+upforgrabs.fill(1);
+
+while(upforgrabs.reduce(getSum, 0) !== 0){
+    //find the opscode with only 1 possibility and claim it
+    opscodes.forEach(code => {
+        var possibles = [];
+        for(var i = 0; i < code.possibleops.length; i++) {
+            //false out any that have been claimed already
+            if(code.possibleops[i] && upforgrabs[i] === 0) {
+                code.possibleops[i] = false;
+            } else if (code.possibleops[i] && upforgrabs[i] === 1) {
+                possibles.push(i);
+            }
+        }
+        //see if we can claim it
+        if (possibles.length === 1) {
+            var final = possibles[0];
+            code.isop = final;
+            upforgrabs[final] = 0;
+        }
+    });
+}
 
 //run the program
 for(var i  = 0; i < programsteps.length; i++) {
@@ -261,5 +286,10 @@ for(var i  = 0; i < programsteps.length; i++) {
     var C = parseInt(programstep[3]);
     opexecs[opindex](A,B,C);
 }
+
+function getSum(total, num) {
+    return total + Math.round(num);
+}
+
 console.log(masterregister);
 console.log("3 or more: %s, Total: %s", mastercount,totalcount);
