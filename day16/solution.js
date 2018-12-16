@@ -63,90 +63,90 @@ opscodes.forEach(code => {
     for(var i = 0; i < testops.length; i++) {
         var op = testops[i];
         var countofoptions = 0;
+        //final reg
+        var rb = op.regb;
+        var ra = op.rega;
+        var A = op.instruction.A;
+        var B = op.instruction.B;
+        var C = op.instruction.C;
         //#region build possibles
         //0:addr (add register) stores into register C the result of adding register A and register B
-        if((op.regb[op.instruction.A] + op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] + rb[B])) {
             //make sure the other registers didn't change
             //create reg copys to compare
             countofoptions += check(0,code,op);
         }
 
         //1:addi (add immediate) stores into register C the result of adding register A and value B.
-        if((op.regb[op.instruction.A] + op.instruction.B) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] + B)) {
             countofoptions += check(1,code,op);
         }
 
         //2:mulr (multiply register) stores into register C the result of multiplying register A and register B.
-        if((op.regb[op.instruction.A] * op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] * rb[B])) {
             countofoptions += check(2,code,op);
         }
 
         //3:muli (multiply immediate) stores into register C the result of multiplying register A and value B.
-        if((op.regb[op.instruction.A] * op.instruction.B) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] * B)) {
             countofoptions += check(3,code,op);
         }
         
         //4:banr (bitwise AND register) stores into register C the result of the bitwise AND of register A and register B.
-        if((op.regb[op.instruction.A] & op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] & rb[B])) {
             countofoptions += check(4,code,op);
         }
 
         //5:bani (bitwise AND immediate) stores into register C the result of the bitwise AND of register A and value B.
-        if((op.regb[op.instruction.A] & op.instruction.B) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] & B)) {
             countofoptions += check(5,code,op);
         }
 
         //6:borr (bitwise OR register) stores into register C the result of the bitwise OR of register A and register B.
-        if((op.regb[op.instruction.A] | op.regb[op.instruction.B]) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] | rb[B])) {
             countofoptions += check(6,code,op);
         }
 
         //7:bori (bitwise OR immediate) stores into register C the result of the bitwise OR of register A and value B.
-        if((op.regb[op.instruction.A] | op.instruction.B) == op.rega[op.instruction.C]) {
+        if(ra[C] === (rb[A] | B)) {
             countofoptions += check(7,code,op);
         }
 
         //8:setr (set register) copies the contents of register A into register C. (Input B is ignored.)
-        if(op.regb[op.instruction.A] == op.rega[op.instruction.C]) {
+        if(ra[C] === rb[A]) {
             countofoptions += check(8,code,op);
         }
 
         //9:seti (set immediate) stores value A into register C. (Input B is ignored.)
-        if(op.instruction.A == op.rega[op.instruction.C]) {
+        if(ra[C] === A) {
             countofoptions += check(9,code,op);
         }
 
         //10:gtir (greater-than immediate/register) sets register C to 1 if value A is greater than register B. Otherwise, register C is set to 0.
-        if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
-           ((op.instruction.A > op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1) || (op.instruction.A <= op.regb[op.instruction.B] && op.rega[op.instruction.C] == 0))){
+        if(ra[C] === (A > rb[B] ? 1 : 0)) {
             countofoptions += check(10,code,op);
         }
         
         //11:gtri (greater-than register/immediate) sets register C to 1 if register A is greater than value B. Otherwise, register C is set to 0.
-        if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
-           ((op.regb[op.instruction.A] > op.instruction.B && op.rega[op.instruction.C] == 1) || (op.regb[op.instruction.A] <= op.instruction.B && op.rega[op.instruction.C] == 0))){
+        if(ra[C] === (rb[A] > B ? 1 : 0)){
             countofoptions += check(11,code,op);
         }
         
         //12:gtrr (greater-than register/register) sets register C to 1 if register A is greater than register B. Otherwise, register C is set to 0.
-        if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
-           ((op.regb[op.instruction.A] > op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1) || (op.regb[op.instruction.A] <= op.regb[op.instruction.B] && op.rega[op.instruction.C] == 0))){
+        if(ra[C] === (rb[A] > rb[B] ? 1 : 0)) { 
             countofoptions += check(12,code,op);
         }
 
         //13:eqir (equal immediate/register) sets register C to 1 if value A is equal to register B. Otherwise, register C is set to 0.
-        if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
-           (op.instruction.A == op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1)){
+        if(ra[C] === (A === rb[B] ? 1 : 0)){
             countofoptions += check(13,code,op);
         }
         //14:eqri (equal register/immediate) sets register C to 1 if register A is equal to value B. Otherwise, register C is set to 0.
-        if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
-           (op.rega[op.instruction.A] == op.instruction.B && op.rega[op.instruction.C] == 1)){
+        if(ra[C] === (rb[A] === B ? 1 : 0)){
             countofoptions += check(14,code,op);
         }
         //15:eqrr (equal register/register) sets register C to 1 if register A is equal to register B. Otherwise, register C is set to 0.
-        if((op.rega[op.instruction.C] == 0 || op.rega[op.instruction.C] == 1) && 
-           (op.regb[op.instruction.A] == op.regb[op.instruction.B] && op.rega[op.instruction.C] == 1)){
+        if(ra[C] === (rb[A] === rb[B] ? 1 : 0)){
             countofoptions += check(15,code,op);
         }
         if (countofoptions >= 3) mastercount++;
