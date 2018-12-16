@@ -291,5 +291,6 @@ function getSum(total, num) {
     return total + Math.round(num);
 }
 
-console.log(masterregister);
 console.log("3 or more: %s, Total: %s", mastercount,totalcount);
+process.stdout.write("Final Register Values: ")
+console.log(masterregister);
