@@ -1,5 +1,5 @@
 var fs = require('fs');
-var inputs = fs.readFileSync('sample.txt').toString().split("\n");
+var inputs = fs.readFileSync('input.txt').toString().split("\n");
 var squareid = 0;
 var clays = new Map();
 var waterunits = 0;
@@ -109,7 +109,11 @@ for(var i = 0; i < board.length; i++) {
 // }
 //#endregion
 
-filldown(board[0][500-minx]);
+
+fallingdownqueue.push(board[0][500-minx]);
+while(fallingdownqueue.length != 0) {
+    
+}
 //printboard();
 //count them when we're done
 var watercount = 0;
@@ -146,8 +150,8 @@ function filldown(water) {
 function fillbreath(water) {
     //fill E,W until the floor falls out
     //printboard();
-    if(water.c - 1 < 0 || water.c + 1 > board[0].length) return;
-
+    if(water.c - 1 < 0 || water.c + 1 >= board[0].length) return;
+    if(water.r - 1 < 1 || water.r + 1 >= board.length) return;
     var S = board[water.r+1][water.c];
     var W = board[water.r][water.c-1];
     var E = board[water.r][water.c+1];
@@ -158,7 +162,7 @@ function fillbreath(water) {
 
     //spread N, W, E
     //check W
-    for(var i = water.c-1; i > 0; i--){
+    for(var i = water.c-1; i >= 0; i--){
         var newW = board[water.r][i];
         var newS = board[water.r+1][i];
         if (newW.type === '#') break;
@@ -182,8 +186,13 @@ function fillbreath(water) {
     //go up a level and fill
     //drip down if im not contained
     if(eend != null || wend != null) {
-        if(eend != null) filldown(eend);
-        if(wend != null) filldown(wend);
+        if(eend != null) {
+            //put them in a queue?
+            fallingdownqueue.push(eend);
+        }
+        if(wend != null) {
+            fallingdownqueue.push(wend);
+        }
     } else fillbreath(N);
     return;
 }
