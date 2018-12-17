@@ -1,5 +1,5 @@
 var fs = require('fs');
-var inputs = fs.readFileSync('input.txt').toString().split("\n");
+var inputs = fs.readFileSync('sample.txt').toString().split("\n");
 var squareid = 0;
 var clays = new Map();
 var waterunits = 0;
@@ -120,6 +120,7 @@ for(var i = 0; i < board.length; i++) {
 }
     
 console.log(watercount);
+printboard();
 //water falls until it hits something
 //when it hits something it fills while it has a base of water or clay
 //if it hits a wall on both sides, it moves up and continues
@@ -170,9 +171,9 @@ function fillbreath(water) {
     //check E
     for(var i = water.c+1; i < board[water.r].length; i++){
         var newE = board[water.r][i];
-        var newS = board[water.r-1][i];
+        var newS = board[water.r+1][i];
         if (newE.type === '#') break;
-        else if (newS.type !== '~' || newS.type !== '#') {
+        else if (newS.type === '.') {
             eend = newE;
             newE.type = '|';
             break;
