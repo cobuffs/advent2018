@@ -5,6 +5,7 @@ var clays = new Map();
 var waterunits = 0;
 var minx = 500;
 var maxx = 0;
+var debug = 2000;
 //229
 var offset = 0;
 var maxy = 0;
@@ -73,134 +74,150 @@ for(var i = 0; i < board.length; i++) {
     }
 }
 
-//lets drip some water and see what happens
-//#region giving up on recursion for now
-// function dripdown(water) {
-//     printboard();
-//     //if already water, good to go
-//     if(water.type === '~') return;
-//     //switch to drip
-//     water.type = '|';
-//     //if i can't move, return
-//     if(water.r + 1 > board.length) return;
-//     if(water.r < 1) return;
-//     var S = board[water.r+1][water.c];
-//     var W = board[water.r][water.c-1];
-//     var E = board[water.r][water.c+1];
-//     var N = board[water.r-1][water.c];
-//     // if((S.type === '|' || S.type === '#' || S.type === '~') && (W.type === '|' || W.type === '#' || W.type === '~') && (E.type === '|' || E.type === '#' || E.type === '~')){
-//     //     water.type = '~';
-//     //     return;
-//     // }
-//     //water should come in as a board point. look for adjacent points
-//     //check down, left, right
-//     //first priority is heading down
-//     if(S.type !== '#') {
-//         //drip
-//         dripdown(S);
-//     } else {
-//         //switch to water and spread
-//         water.type = '~';
-//         //if i can't move S, try to spready EW
-//         if (W.type === '.') dripdown(W);
-//         if (E.type === '.') dripdown(E);
-//         if (N.type === '|') dripdown(N);
-//     }
-// }
-//#endregion
 
 
-fallingdownqueue.push(board[0][500-minx]);
-while(fallingdownqueue.length != 0) {
-    
-}
-//printboard();
-//count them when we're done
+filldown(board[0][500-minx]);
+printboard(debug);
+
 var watercount = 0;
 for(var i = 0; i < board.length; i++) {
     for(var j = 0; j < board[i].length; j++){
         if (board[i][j].type === '|' || board[i][j].type === '~') watercount++;
     }
 }
-    
+
 console.log(watercount);
-printboard();
 //water falls until it hits something
 //when it hits something it fills while it has a base of water or clay
 //if it hits a wall on both sides, it moves up and continues
 //if it breaks down the whole process repeats
 function filldown(water) {
-    //printboard();
-    //bottom of board
-    if(water.r + 1 >= board.length) return;
-    //console.log(water);
+    if(water.r + 1 >= board.length || water.r + 1 > debug) return;
     var S = board[water.r+1][water.c];
-
-    if(S.type === '#' || S.type === '~') {
+    if(S.type === '|') return;
+    else if(S.type === '~') fillbreath(S);
+    else if(S.type === '#') {
         fillbreath(water);
-        return;
+        water.type = '~';2
     }
     else {
         S.type = '|';
         filldown(S);
     }
-
 }
 
+
 function fillbreath(water) {
-    //fill E,W until the floor falls out
+    //comes in as a drip. flip it
     //printboard();
+    //fill E,W until the floor falls out
     if(water.c - 1 < 0 || water.c + 1 >= board[0].length) return;
     if(water.r - 1 < 1 || water.r + 1 >= board.length) return;
+    
     var S = board[water.r+1][water.c];
     var W = board[water.r][water.c-1];
     var E = board[water.r][water.c+1];
     var N = board[water.r-1][water.c];
-    var wend = null;
-    var eend = null;
-    water.type = '~';
 
-    //spread N, W, E
-    //check W
-    for(var i = water.c-1; i >= 0; i--){
+    //for us to accumulate at all, we need a wall on both sides. see if this is the case
+    var wend = null;
+    var ws = null;
+    var eend = null;
+    var es = null;
+
+    for(var i = water.c-1; i >= 0; i--) {
         var newW = board[water.r][i];
         var newS = board[water.r+1][i];
-        if (newW.type === '#') break;
-        else if (newS.type === '.') {
+        //if we hit a wall we're done
+        if(newW.type === '#' || newS.type === '.' || newS.type === '|') {
             wend = newW;
-            newW.type = '|';
+            if((newS.type === '.' || newS.type === '|') && newW.type !== '#') ws = newS;
             break;
-        } else newW.type = '~';
+        }
     }
-    //check E
-    for(var i = water.c+1; i < board[water.r].length; i++){
+
+    for(var i = water.c+1;i < board[water.r].length; i++) {
         var newE = board[water.r][i];
         var newS = board[water.r+1][i];
-        if (newE.type === '#') break;
-        else if (newS.type === '.') {
+        //if we hit a wall we're done
+        if(newE.type === '#' || newS.type === '.'|| newS.type === '|') {
             eend = newE;
-            newE.type = '|';
+            if((newS.type === '.' || newS.type === '|' ) && newE.type !== '#') es = newS;
             break;
-        } else newE.type = '~';
+        }
     }
-    //go up a level and fill
-    //drip down if im not contained
-    if(eend != null || wend != null) {
-        if(eend != null) {
-            //put them in a queue?
-            fallingdownqueue.push(eend);
+
+    if(wend !== null && eend !== null){
+        //if ends were ., flip to drips
+        for(var i = wend.c+1; i < eend.c; i++) {
+            board[wend.r][i].type = '~';
         }
-        if(wend != null) {
-            fallingdownqueue.push(wend);
+        if (ws !== null) {
+            wend.type = '|';
+            filldown(wend);
         }
-    } else fillbreath(N);
-    return;
+        if (es !== null) {
+            eend.type = '|';
+            filldown(eend);
+        }
+        if(ws === null && es === null) fillbreath(N);
+    }
+
+    //if both E and W hit a boundary
+    //fill the row and go up the drip
+
+    //if we hit a drop, we shouldn't do anything
+
+    //if we hit a hole in the floor, switch to a drop and fill donw
+
+
+    // var wend = null;
+    // var eend = null;
+    // water.type = '~';
+
+    // //spread N, W, E
+    // //check W
+    // for(var i = water.c-1; i >= 0; i--){
+    //     var newW = board[water.r][i];
+    //     var newS = board[water.r+1][i];
+    //     if (newW.type === '#' || newW.type === '|') break;
+    //     else if (newS.type === '|') break;
+    //     else if (newS.type === '.') {
+    //         wend = newW;
+    //         newW.type = '|';
+    //         break;
+    //     } else newW.type = '~';
+    // }
+    // //check E
+    // for(var i = water.c+1; i < board[water.r].length; i++){
+    //     var newE = board[water.r][i];
+    //     var newS = board[water.r+1][i];
+    //     if (newE.type === '#' || newE.type === '|') break;
+    //     else if (newS.type === '|') break;
+    //     else if (newS.type === '.') {
+    //         eend = newE;
+    //         newE.type = '|';
+    //         break;
+    //     } else newE.type = '~';
+    // }
+    // //go up a level and fill
+    // //drip down if im not contained
+    // if(eend != null || wend != null) {
+    //     if(eend != null) {
+    //         filldown(eend);
+    //     }
+    //     if(wend != null) {
+    //         filldown(wend);
+    //     }
+    // } else if(newE.type === '|' && newW.type === '|') return;
+    // else fillbreath(N);
+    // return;
 }
 
 
-function printboard() {
+function printboard(height=board.length) {
     var outstr = '\n\n';
-    for(var i = 0; i < board.length; i++) {
+    for(var i = 0; i < board.length && i < height; i++) {
         for(var j = 0; j < board[i].length; j++){
             var sq = board[i][j];
             outstr += sq.type;
