@@ -76,8 +76,6 @@ for(var i = 0; i < board.length; i++) {
     }
 }
 
-
-
 filldown(board[0][500-minx]);
 //printboard(debug);
 
@@ -168,6 +166,7 @@ function fillbreath(water) {
         }
         if(ws === null && es === null) fillbreath(N);
     }
+}
 
 function printboard(height=board.length) {
     var outstr = '\n\n';
