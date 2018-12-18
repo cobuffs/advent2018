@@ -169,58 +169,6 @@ function fillbreath(water) {
         if(ws === null && es === null) fillbreath(N);
     }
 
-    //if both E and W hit a boundary
-    //fill the row and go up the drip
-
-    //if we hit a drop, we shouldn't do anything
-
-    //if we hit a hole in the floor, switch to a drop and fill donw
-
-
-    // var wend = null;
-    // var eend = null;
-    // water.type = '~';
-
-    // //spread N, W, E
-    // //check W
-    // for(var i = water.c-1; i >= 0; i--){
-    //     var newW = board[water.r][i];
-    //     var newS = board[water.r+1][i];
-    //     if (newW.type === '#' || newW.type === '|') break;
-    //     else if (newS.type === '|') break;
-    //     else if (newS.type === '.') {
-    //         wend = newW;
-    //         newW.type = '|';
-    //         break;
-    //     } else newW.type = '~';
-    // }
-    // //check E
-    // for(var i = water.c+1; i < board[water.r].length; i++){
-    //     var newE = board[water.r][i];
-    //     var newS = board[water.r+1][i];
-    //     if (newE.type === '#' || newE.type === '|') break;
-    //     else if (newS.type === '|') break;
-    //     else if (newS.type === '.') {
-    //         eend = newE;
-    //         newE.type = '|';
-    //         break;
-    //     } else newE.type = '~';
-    // }
-    // //go up a level and fill
-    // //drip down if im not contained
-    // if(eend != null || wend != null) {
-    //     if(eend != null) {
-    //         filldown(eend);
-    //     }
-    //     if(wend != null) {
-    //         filldown(wend);
-    //     }
-    // } else if(newE.type === '|' && newW.type === '|') return;
-    // else fillbreath(N);
-    // return;
-}
-
-
 function printboard(height=board.length) {
     var outstr = '\n\n';
     for(var i = 0; i < board.length && i < height; i++) {
