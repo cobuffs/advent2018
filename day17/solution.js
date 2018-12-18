@@ -4,6 +4,7 @@ var squareid = 0;
 var clays = new Map();
 var waterunits = 0;
 var minx = 500;
+var miny = 100;
 var maxx = 0;
 var debug = 2000;
 //229
@@ -43,6 +44,7 @@ for (var i = 0; i < inputs.length; i++){
     if (xstart < minx) minx = xstart;
     if (yend > maxy) maxy = yend;
     if (xend > maxx) maxx = xend;
+    if (ystart < miny) miny = ystart;
 }
 
 //build board based on values found above
@@ -77,16 +79,19 @@ for(var i = 0; i < board.length; i++) {
 
 
 filldown(board[0][500-minx]);
-printboard(debug);
+//printboard(debug);
 
 var watercount = 0;
-for(var i = 0; i < board.length; i++) {
+var settleunits = 0;
+for(var i = miny; i < board.length; i++) {
     for(var j = 0; j < board[i].length; j++){
         if (board[i][j].type === '|' || board[i][j].type === '~') watercount++;
+        if (board[i][j].type === '~') settleunits++;
     }
 }
 
 console.log(watercount);
+console.log(settleunits);
 //water falls until it hits something
 //when it hits something it fills while it has a base of water or clay
 //if it hits a wall on both sides, it moves up and continues
@@ -98,7 +103,7 @@ function filldown(water) {
     else if(S.type === '~') fillbreath(S);
     else if(S.type === '#') {
         fillbreath(water);
-        water.type = '~';2
+        //water.type = '~';
     }
     else {
         S.type = '|';
@@ -150,7 +155,8 @@ function fillbreath(water) {
     if(wend !== null && eend !== null){
         //if ends were ., flip to drips
         for(var i = wend.c+1; i < eend.c; i++) {
-            board[wend.r][i].type = '~';
+            if(es !== null || ws !== null) board[wend.r][i].type = '|';
+            else board[wend.r][i].type = '~';
         }
         if (ws !== null) {
             wend.type = '|';
