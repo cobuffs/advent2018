@@ -23,33 +23,61 @@ var instructions = [];
 var boundreg = inputs[0].split(' ')[1];
 var instrptr = 0;
 
-masterregister = ['a',0,0,0,0,0];
+
 
 for(var i = 1; i < inputs.length; i++){
     var line = inputs[i].split(' ');
     instructions.push(buildop(line[0],line[1],line[2],line[3]));
 }
+const numlog = 50;
 
-var counter = 0;
+//lets go crazy
+for(var i = 0; i < 1;i++) {
+    foo = Math.pow(2,i) - 1;
+    masterregister = [11592302,0,0,0,0,0];
+    var counter = 0;
+    var optrail = new Array(numlog);
+    var reg1 = 0;
+    var changes = 0;
+    var lastreg = 0;
+    console.log("trying: " + masterregister);
+    while(instrptr < instructions.length && counter < 2500) {
 
-while(instrptr < instructions.length) {
+        //track the instr
+        //write the instrptr to bound reg
+        masterregister[boundreg] = instrptr;
+        var desc = "#" + counter + " ip=" + instrptr + " " + masterregister + " ";
+        //get the instruction and execute it
+        var inst = instructions[instrptr];
+        desc += opstr(inst);
+        opmap.get(inst.op)(inst.A, inst.B, inst.C);
+        
+        //read it back to ptr and add 1
+        instrptr = masterregister[boundreg] + 1;
+        desc += " ip=" + instrptr + " " + masterregister + " ";
+        //if (masterregister[1] !== 0) console.log(masterregister);
+        //if (masterregister[1] !== 2 && masterregister[0] !== 1) console.log(masterregister);;
+        console.log(counter + " " + desc);
+        //console.log(masterregister);
 
-    //track the instr
-    //write the instrptr to bound reg
-    masterregister[boundreg] = instrptr;
-    var desc = "ip=" + instrptr + " " + masterregister + " ";
-    //get the instruction and execute it
-    var inst = instructions[instrptr];
-    desc += opstr(inst);
-    opmap.get(inst.op)(inst.A, inst.B, inst.C);
-    
-    //read it back to ptr and add 1
-    instrptr = masterregister[boundreg] + 1;
-    desc += " ip=" + instrptr + " " + masterregister + " ";
-    //if (masterregister[1] !== 0) console.log(masterregister);
-    //if (masterregister[1] !== 2 && masterregister[0] !== 1) console.log(masterregister);;
-    console.log(counter + " " + desc);
-    //console.log(masterregister);
+        //store off last 100 ops
+        optrail[counter++%numlog] = desc;
+        reg1 = masterregister[1];
+        if(reg1 !== lastreg && counter > numlog) {
+            changes++;
+            lastreg = reg1;
+            //printoptrail();
+        }
+        
+    }
+}
+
+
+function printoptrail() {
+    //want to start with the counter
+    for(var i = 0; i < optrail.length; i++){
+        console.log(optrail[(i+counter)%numlog]);
+    }
 }
 
 function buildop(op, A, B, C) {
