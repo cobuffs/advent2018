@@ -43,7 +43,7 @@ function reset() {
 }
 
 function simulate() {
-
+    console.log("Beginning combat with buff %s and size (immunities: %s, infections: %s)", buff, immunity.length, infection.length);
     var winner = null;
         
     while(livingimmunity.size > 0 && livinginfection.size > 0) {
@@ -105,24 +105,8 @@ function simulate() {
                         highesteffs.push(targetunit);
                     }
                 }
-                if(highesteffs.length === 1) {
-                    unit.currenttarget = {"target":highesteffs[0], "dmg": dmg};
-                } else {
-                    //if still tied!
-                    var highestinits =  [];
-                    var highestinit = 0;
-                    for (var k = 0; k < highesteffs.length; k++) {
-                        var targetunit = highesteffs[k];
-                        if((targetunit.atk * targetunit.numunits) === highestinit) {
-                            highestinits.push(targetunit);
-                        } else if ((targetunit.atk * targetunit.numunits) > highestinit) {
-                            highestinits = [];
-                            highestinit = (targetunit.atk * targetunit.numunits);
-                            highestinits.push(targetunit);
-                        }
-                    }
-                    unit.currenttarget = {"target": highestinits[0], "dmg": dmg};
-                }
+                highesteffs.sort(sortbyinit);
+                unit.currenttarget = {"target":highesteffs[0], "dmg": dmg};
             }
             if(unit.currenttarget !== null) livingimmunity.delete(unit.currenttarget.target.id);
         }
@@ -181,24 +165,8 @@ function simulate() {
                         highesteffs.push(targetunit);
                     }
                 }
-                if(highesteffs.length === 1) {
-                    unit.currenttarget = {"target":highesteffs[0], "dmg": dmg};
-                } else {
-                    //if still tied!
-                    var highestinits =  [];
-                    var highestinit = 0;
-                    for (var k = 0; k < highesteffs.length; k++) {
-                        var targetunit = highesteffs[k];
-                        if((targetunit.atk * targetunit.numunits) === highestinit) {
-                            highestinits.push(targetunit);
-                        } else if ((targetunit.atk * targetunit.numunits) > highestinit) {
-                            highestinits = [];
-                            highestinit = (targetunit.atk * targetunit.numunits);
-                            highestinits.push(targetunit);
-                        }
-                    }
-                    unit.currenttarget = {"target": highestinits[0], "dmg": dmg};
-                }
+                highesteffs.sort(sortbyinit);
+                unit.currenttarget = {"target": highesteffs[0], "dmg": dmg};
             }
             if(unit.currenttarget !== null) livinginfection.delete(unit.currenttarget.target.id);
         }
