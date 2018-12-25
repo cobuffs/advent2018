@@ -173,7 +173,7 @@ function simulate() {
                 var dmg = targetunits[0].dmg;
                 for (var k = 0; k < targetunits.length; k++) {
                     var targetunit = targetunits[k].target;
-                                    if((targetunit.atk * targetunit.numunits) === highestpwr) {
+                    if((targetunit.atk * targetunit.numunits) === highestpwr) {
                         highesteffs.push(targetunit);
                     } else if ((targetunit.atk * targetunit.numunits) > highestpwr) {
                         hightesteffs = [];
