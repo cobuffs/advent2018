@@ -10,7 +10,7 @@ const targety = 10;
 
 // 0 - nothing
 // 1 - torch
-// 2 - climbingn
+// 2 - climbing
 
 var totalmin = 0;
 
@@ -61,8 +61,7 @@ function simulate() {
     var speed = mins;
     var origin = cave.get("0,0");
     queue.push(origin);
-    var visited = new Map();
-    visited.set("0,0,1",0);
+    var times = new Map();
     var founnd = false;
 
     while(queue.length !== 0 && !found && mins < maxmin) {
