@@ -1,0 +1,189 @@
+{
+    "immunity":[
+        {
+            "id":0,
+            "numunits":8808,
+            "hps":5616,
+            "immunities":[0],
+            "weaknesses": [1],
+            "atk":5,
+            "atktype":4,
+            "init": 10
+        },
+        {
+            "id":1,
+            "numunits":900,
+            "hps":13511,
+            "immunities":[],
+            "weaknesses": [1],
+            "atk":107,
+            "atktype":1,
+            "init": 20
+        },{
+            "id":2,
+            "numunits":581,
+            "hps":10346,
+            "immunities":[2],
+            "weaknesses": [1],
+            "atk":140,
+            "atktype":3,
+            "init": 14
+        },{
+            "id":3,
+            "numunits":57,
+            "hps":9991,
+            "immunities":[1,2,3],
+            "weaknesses": [4],
+            "atk":1690,
+            "atktype":3,
+            "init": 4
+        },{
+            "id":4,
+            "numunits":4074,
+            "hps":6549,
+            "immunities":[],
+            "weaknesses": [3],
+            "atk":15,
+            "atktype":1,
+            "init": 2
+        },{
+            "id":5,
+            "numunits":929,
+            "hps":5404,
+            "immunities":[1,4],
+            "weaknesses": [],
+            "atk":45,
+            "atktype":3,
+            "init": 16
+        },{
+            "id":6,
+            "numunits":2196,
+            "hps":3186,
+            "immunities":[1],
+            "weaknesses": [3],
+            "atk":10,
+            "atktype":3,
+            "init": 11
+        },{
+            "id":7,
+            "numunits":4420,
+            "hps":9691,
+            "immunities":[3],
+            "weaknesses": [1],
+            "atk":21,
+            "atktype":3,
+            "init": 7
+        },{
+            "id":8,
+            "numunits":3978,
+            "hps":2306,
+            "immunities":[],
+            "weaknesses": [0,1],
+            "atk":4,
+            "atktype":3,
+            "init": 12
+        },{
+            "id":9,
+            "numunits":1284,
+            "hps":4487,
+            "immunities":[],
+            "weaknesses": [1,4],
+            "atk":32,
+            "atktype":2,
+            "init": 19
+        }
+    ],
+    "infection":[
+        {
+            "id":10,
+            "numunits":4262,
+            "hps":23427,
+            "immunities":[3],
+            "weaknesses": [2],
+            "atk":9,
+            "atktype":2,
+            "init": 8
+        },{
+            "id":11,
+            "numunits":217,
+            "hps":9837,
+            "immunities":[],
+            "weaknesses": [4],
+            "atk":73,
+            "atktype":4,
+            "init": 1
+        },{
+            "id":12,
+            "numunits":5497,
+            "hps":33578,
+            "immunities":[],
+            "weaknesses": [0,1],
+            "atk":11,
+            "atktype":2,
+            "init": 17
+        },{
+            "id":13,
+            "numunits":866,
+            "hps":41604,
+            "immunities":[],
+            "weaknesses": [0],
+            "atk":76,
+            "atktype":1,
+            "init": 15
+        },{
+            "id":14,
+            "numunits":1823,
+            "hps":19652,
+            "immunities":[],
+            "weaknesses": [0,3],
+            "atk":20,
+            "atktype":2,
+            "init": 13
+        },{
+            "id":15,
+            "numunits":2044,
+            "hps":23512,
+            "immunities":[],
+            "weaknesses": [0],
+            "atk":22,
+            "atktype":2,
+            "init": 9
+        },{
+            "id":16,
+            "numunits":373,
+            "hps":40861,
+            "immunities":[0],
+            "weaknesses": [],
+            "atk":215,
+            "atktype":2,
+            "init": 18
+        },{
+            "id":17,
+            "numunits":5427,
+            "hps":43538,
+            "immunities":[1],
+            "weaknesses": [4],
+            "atk":15,
+            "atktype":2,
+            "init": 5
+        },{
+            "id":18,
+            "numunits":3098,
+            "hps":19840,
+            "immunities":[],
+            "weaknesses": [0,4],
+            "atk":12,
+            "atktype":1,
+            "init": 3
+        },{
+            "id":19,
+            "numunits":785,
+            "hps":14669,
+            "immunities":[],
+            "weaknesses": [],
+            "atk":30,
+            "atktype":3,
+            "init": 6
+        }
+    ]
+}
